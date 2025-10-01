@@ -1762,8 +1762,13 @@
                     tapCount = 1; // reset se è passato troppo tempo
                 }
 
-                // Esegui sempre dive per risalita immediata
-                dive();
+                // Se è il secondo tap (potenziale double tap), dive più leggero
+                if (tapCount === 2) {
+                    submarine.velocity = submarine.dive * 0.4; // 40% della forza normale
+                } else {
+                    // Altrimenti dive normale
+                    dive();
+                }
 
                 // Cancella il timer precedente
                 if (tapTimer) {
