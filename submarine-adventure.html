@@ -426,7 +426,7 @@
         let starsCollected = 0;
 
         // Mission system
-        let currentMission = { type: 'survive', target: 0, progress: 0 };
+        let currentMission = { type: 'survive', target: 0, progress: 0, completed: false };
         const missions = [
             { type: 'survive', text: 'Survive 30 seconds', target: 1800 },
             { type: 'collect', text: 'Collect 10 stars', target: 10 },
@@ -1100,13 +1100,14 @@
                 missionElement.textContent = `Mission: Score ${score}/${currentMission.target}`;
             }
 
-            // Check mission completion
-            if (currentMission.progress >= currentMission.target) {
+            // Check mission completion (only once)
+            if (!currentMission.completed && currentMission.progress >= currentMission.target) {
                 completeMission();
             }
         }
 
         function completeMission() {
+            currentMission.completed = true;
             missionElement.textContent = 'MISSION COMPLETE!';
             missionElement.style.color = '#00ff00';
             missionElement.style.borderColor = '#00ff00';
@@ -1169,7 +1170,7 @@
 
         function assignNewMission() {
             const mission = missions[Math.floor(Math.random() * missions.length)];
-            currentMission = { type: mission.type, target: mission.target, progress: 0 };
+            currentMission = { type: mission.type, target: mission.target, progress: 0, completed: false };
             missionElement.style.color = '#00d4ff';
             missionElement.style.borderColor = '#00d4ff';
             updateMissionDisplay();
