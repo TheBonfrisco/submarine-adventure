@@ -94,6 +94,82 @@
             overflow-y: auto;
         }
 
+        #nicknamePrompt {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 30px;
+            border-radius: 10px;
+            border: 4px solid #00d4ff;
+            z-index: 30;
+            text-align: center;
+            display: none;
+        }
+
+        #nicknamePrompt h2 {
+            color: #00d4ff;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 20px;
+            font-size: clamp(20px, 5vw, 28px);
+        }
+
+        #nicknamePrompt input {
+            padding: 12px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            border: 3px solid #00d4ff;
+            background: #001529;
+            color: white;
+            text-align: center;
+            width: 200px;
+            margin-bottom: 20px;
+        }
+
+        #leaderboardScreen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            border: 4px solid #FFD700;
+            z-index: 25;
+            text-align: center;
+            display: none;
+            min-width: 300px;
+        }
+
+        #leaderboardScreen h2 {
+            color: #FFD700;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 15px;
+            font-size: clamp(20px, 5vw, 28px);
+        }
+
+        #leaderboardList {
+            list-style: none;
+            padding: 0;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+            color: white;
+            font-size: 16px;
+        }
+
+        #leaderboardList li {
+            padding: 8px;
+            margin: 5px 0;
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 3px solid #00d4ff;
+        }
+
+        #leaderboardList li:first-child {
+            background: rgba(255, 215, 0, 0.2);
+            border-left: 3px solid #FFD700;
+        }
+
         #helpScreen h2 {
             font-size: clamp(24px, 6vw, 36px);
             margin-bottom: 20px;
@@ -299,10 +375,22 @@
             </div>
             <div id="mission" style="display: none;">Mission: Survive!</div>
             <div id="trademark" style="position: absolute; bottom: 15px; right: 15px; font-size: 12px; font-family: 'Courier New', monospace; color: white; z-index: 10; pointer-events: none; opacity: 0.7;">© TheBonfrisco</div>
+            <div id="nicknamePrompt">
+                <h2>Enter Your Nickname</h2>
+                <input type="text" id="nicknameInput" maxlength="12" placeholder="Your nickname">
+                <br>
+                <button class="btn" onclick="saveNickname()">Start Playing!</button>
+            </div>
+            <div id="leaderboardScreen">
+                <h2>🏆 TOP 5 LEADERBOARD 🏆</h2>
+                <ul id="leaderboardList"></ul>
+                <button class="btn" onclick="closeLeaderboard()">Close</button>
+            </div>
             <div id="startScreen">
                 <h1>Submarine<br>Adventure</h1>
                 <button class="btn" onclick="startGame()">▶ Start Game</button>
                 <button class="btn-secondary" onclick="showHelp()">How to Play</button>
+                <button class="btn-secondary" onclick="loadLeaderboard()">🏆 Leaderboard</button>
             </div>
             <div id="helpScreen">
                 <h2>HOW TO PLAY</h2>
@@ -327,10 +415,39 @@
                 <p id="finalScore" style="font-size: clamp(28px, 7vw, 42px); color: #00d4ff; margin: 25px 0;">Score: 0</p>
                 <p id="highScore"></p>
                 <button class="btn" onclick="restartGame()">↻ Retry</button>
+                <button class="btn-secondary" onclick="loadLeaderboard()">🏆 View Leaderboard</button>
             </div>
             <canvas id="gameCanvas"></canvas>
         </div>
     </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, get, query, orderByChild, limitToLast } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAJksRC-vaJtzjp7-mRNmMWdiScBCRGws4",
+            authDomain: "submarine-adventure-9e3c6.firebaseapp.com",
+            databaseURL: "https://submarine-adventure-9e3c6-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "submarine-adventure-9e3c6",
+            storageBucket: "submarine-adventure-9e3c6.firebasestorage.app",
+            messagingSenderId: "722232616109",
+            appId: "1:722232616109:web:b28aca89347d3987091224"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Expose to global scope
+        window.firebaseDB = database;
+        window.firebaseRef = ref;
+        window.firebaseSet = set;
+        window.firebaseGet = get;
+        window.firebaseQuery = query;
+        window.firebaseOrderByChild = orderByChild;
+        window.firebaseLimitToLast = limitToLast;
+    </script>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -347,6 +464,13 @@
         const gameOverScreen = document.getElementById('gameOverScreen');
         const finalScoreElement = document.getElementById('finalScore');
         const highScoreElement = document.getElementById('highScore');
+        const nicknamePrompt = document.getElementById('nicknamePrompt');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const leaderboardScreen = document.getElementById('leaderboardScreen');
+        const leaderboardList = document.getElementById('leaderboardList');
+
+        // Player nickname management
+        let playerNickname = localStorage.getItem('submarineNickname') || '';
 
         function showHelp() {
             startScreen.style.display = 'none';
@@ -357,6 +481,87 @@
             helpScreen.style.display = 'none';
             startScreen.style.display = 'block';
         }
+
+        function saveNickname() {
+            const nickname = nicknameInput.value.trim();
+            if (nickname.length < 2) {
+                alert('Nickname must be at least 2 characters!');
+                return;
+            }
+            playerNickname = nickname;
+            localStorage.setItem('submarineNickname', nickname);
+            nicknamePrompt.style.display = 'none';
+            startScreen.style.display = 'block';
+        }
+
+        async function uploadScore(nickname, score) {
+            try {
+                const timestamp = Date.now();
+                const scoreRef = window.firebaseRef(window.firebaseDB, `leaderboard/${timestamp}`);
+                await window.firebaseSet(scoreRef, {
+                    nickname: nickname,
+                    score: score,
+                    timestamp: timestamp
+                });
+                console.log('Score uploaded successfully!');
+            } catch (error) {
+                console.error('Error uploading score:', error);
+            }
+        }
+
+        async function loadLeaderboard() {
+            try {
+                const leaderboardRef = window.firebaseRef(window.firebaseDB, 'leaderboard');
+                const topScoresQuery = window.firebaseQuery(
+                    leaderboardRef,
+                    window.firebaseOrderByChild('score'),
+                    window.firebaseLimitToLast(5)
+                );
+
+                const snapshot = await window.firebaseGet(topScoresQuery);
+                const scores = [];
+
+                if (snapshot.exists()) {
+                    snapshot.forEach((childSnapshot) => {
+                        scores.push(childSnapshot.val());
+                    });
+                }
+
+                // Sort descending
+                scores.sort((a, b) => b.score - a.score);
+
+                // Display leaderboard
+                leaderboardList.innerHTML = '';
+                scores.forEach((entry, index) => {
+                    const li = document.createElement('li');
+                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
+                    li.textContent = `${medal} ${entry.nickname}: ${entry.score}`;
+                    leaderboardList.appendChild(li);
+                });
+
+                if (scores.length === 0) {
+                    leaderboardList.innerHTML = '<li>No scores yet. Be the first!</li>';
+                }
+
+                leaderboardScreen.style.display = 'block';
+            } catch (error) {
+                console.error('Error loading leaderboard:', error);
+                leaderboardList.innerHTML = '<li>Error loading leaderboard</li>';
+                leaderboardScreen.style.display = 'block';
+            }
+        }
+
+        function closeLeaderboard() {
+            leaderboardScreen.style.display = 'none';
+        }
+
+        // Check nickname on page load
+        window.addEventListener('load', () => {
+            if (!playerNickname) {
+                nicknamePrompt.style.display = 'block';
+                startScreen.style.display = 'none';
+            }
+        });
 
         // High score tracking
         let highScore = localStorage.getItem('submarineHighScore') || 0;
@@ -1468,6 +1673,11 @@
             gameState = 'gameOver';
             gameOverScreen.style.display = 'block';
             finalScoreElement.textContent = `Score: ${score}`;
+
+            // Upload score to leaderboard
+            if (playerNickname && score > 0) {
+                uploadScore(playerNickname, score);
+            }
 
             if (score > highScore) {
                 highScore = score;
