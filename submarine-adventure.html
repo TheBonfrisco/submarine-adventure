@@ -68,7 +68,7 @@
 
         #startScreen, #gameOverScreen, #helpScreen {
             position: absolute;
-            top: 50%;
+            top: 60%;
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
@@ -80,6 +80,10 @@
 
         #gameOverScreen, #helpScreen {
             display: none;
+        }
+
+        #helpScreen {
+            top: 50%;
         }
 
         #helpScreen {
@@ -365,8 +369,8 @@
         // Setup canvas size
         function resizeCanvas() {
             const maxWidth = 450;
-            const maxHeight = 800;
-            const padding = 20;
+            const maxHeight = 700;
+            const padding = 40;
 
             const availableWidth = window.innerWidth - padding;
             const availableHeight = window.innerHeight - padding;
