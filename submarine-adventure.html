@@ -1078,10 +1078,8 @@
                 submarine.y = canvas.height / 2; // Reset position
                 submarine.velocity = 0;
 
-                // Assign new mission after delay
-                setTimeout(() => {
-                    assignNewMission();
-                }, 2000);
+                // Assign new mission immediately to prevent double rewards
+                assignNewMission();
             } else {
                 gameOver();
             }
