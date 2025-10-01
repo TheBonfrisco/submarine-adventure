@@ -423,7 +423,6 @@
 
         // Collectibles (stars)
         const stars = [];
-        let starsCollected = 0;
 
         // Mission system
         let currentMission = { type: 'survive', target: 0, progress: 0, completed: false };
@@ -610,7 +609,6 @@
 
                 if (dist < star.size + submarine.width / 2 && !star.collected) {
                     star.collected = true;
-                    starsCollected++;
                     if (currentMission.type === 'collect') {
                         currentMission.progress++;
                         updateMissionDisplay();
@@ -1315,7 +1313,6 @@
             score = 0;
             frames = 0;
             lives = 3;
-            starsCollected = 0;
             isInvulnerable = false;
             invulnerabilityTimer = 0;
             activePowerup = null;
