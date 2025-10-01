@@ -15,8 +15,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            height: 100vh;
             width: 100vw;
             margin: 0;
             padding: 0;
@@ -24,7 +22,6 @@
             font-family: Arial, sans-serif;
             overflow: hidden;
             touch-action: none;
-            position: fixed;
         }
 
         #gameContainer {
@@ -391,8 +388,20 @@
             canvas.height = canvasHeight;
         }
 
+        // Fix viewport height for mobile browsers
+        function setViewportHeight() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            document.body.style.height = `${window.innerHeight}px`;
+        }
+
+        setViewportHeight();
         resizeCanvas();
-        window.addEventListener('resize', resizeCanvas);
+
+        window.addEventListener('resize', () => {
+            setViewportHeight();
+            resizeCanvas();
+        });
 
         let gameState = 'start';
         let score = 0;
