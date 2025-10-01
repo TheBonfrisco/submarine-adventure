@@ -539,7 +539,7 @@
                         y: y,
                         width: 40,
                         height: 15,
-                        speed: 4 + Math.random() * 2, // Velocità variabile
+                        baseSpeed: 2.5 + Math.random() * 1.5, // Velocità base variabile
                         rotation: 0
                     });
                 }
@@ -548,8 +548,12 @@
         }
 
         function drawMissiles() {
+            const speedMultiplier = activePowerup === 'slowmo' ? 0.5 : 1;
+
             missiles.forEach((missile, index) => {
-                missile.x -= missile.speed;
+                // Velocità missili sincronizzata con velocità del gioco
+                const missileSpeed = (currentSpeed + missile.baseSpeed) * speedMultiplier;
+                missile.x -= missileSpeed;
 
                 ctx.save();
                 ctx.translate(missile.x + missile.width / 2, missile.y + missile.height / 2);
