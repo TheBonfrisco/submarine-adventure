@@ -524,6 +524,8 @@
 
         async function loadLeaderboard() {
             try {
+                console.log('Loading leaderboard...');
+
                 // Wait for Firebase to be ready
                 let attempts = 0;
                 while (!window.firebaseDB && attempts < 50) {
@@ -531,18 +533,32 @@
                     attempts++;
                 }
 
+                console.log('Firebase DB status:', window.firebaseDB ? 'Ready' : 'Not ready');
+                console.log('Firebase functions:', {
+                    ref: typeof window.firebaseRef,
+                    get: typeof window.firebaseGet,
+                    query: typeof window.firebaseQuery,
+                    orderByChild: typeof window.firebaseOrderByChild,
+                    limitToLast: typeof window.firebaseLimitToLast
+                });
+
                 if (!window.firebaseDB) {
-                    throw new Error('Firebase not initialized');
+                    throw new Error('Firebase not initialized after waiting');
                 }
 
                 const leaderboardRef = window.firebaseRef(window.firebaseDB, 'leaderboard');
+                console.log('Created leaderboard ref');
+
                 const topScoresQuery = window.firebaseQuery(
                     leaderboardRef,
                     window.firebaseOrderByChild('score'),
                     window.firebaseLimitToLast(5)
                 );
+                console.log('Created query');
 
                 const snapshot = await window.firebaseGet(topScoresQuery);
+                console.log('Got snapshot:', snapshot.exists());
+
                 const scores = [];
 
                 if (snapshot.exists()) {
@@ -550,6 +566,8 @@
                         scores.push(childSnapshot.val());
                     });
                 }
+
+                console.log('Scores loaded:', scores.length);
 
                 // Sort descending
                 scores.sort((a, b) => b.score - a.score);
@@ -569,8 +587,10 @@
 
                 leaderboardScreen.style.display = 'block';
             } catch (error) {
-                console.error('Error loading leaderboard:', error);
-                leaderboardList.innerHTML = '<li>Error loading leaderboard. Check Firebase setup.</li>';
+                console.error('Detailed error:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                leaderboardList.innerHTML = `<li>Error: ${error.message}</li>`;
                 leaderboardScreen.style.display = 'block';
             }
         }
