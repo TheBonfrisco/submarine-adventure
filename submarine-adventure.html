@@ -437,11 +437,11 @@
         const stars = [];
 
         // Mission system
-        let currentMission = { type: 'survive', target: 0, progress: 0, completed: false };
+        let currentMission = { type: 'survive', target: 0, progress: 0, completed: false, startScore: 0 };
         const missions = [
             { type: 'survive', text: 'Survive 30 seconds', target: 1800 },
             { type: 'collect', text: 'Collect 10 stars', target: 10 },
-            { type: 'score', text: 'Reach score 15', target: 15 }
+            { type: 'score', text: 'Score 15 points', target: 15 }
         ];
 
         // Obstacles (coral/rocks)
@@ -1217,7 +1217,7 @@
             } else if (currentMission.type === 'collect') {
                 missionElement.textContent = `Mission: Collect ${currentMission.progress}/${currentMission.target} stars`;
             } else if (currentMission.type === 'score') {
-                missionElement.textContent = `Mission: Score ${score}/${currentMission.target}`;
+                missionElement.textContent = `Mission: Score ${currentMission.progress}/${currentMission.target} points`;
             }
 
             // Check mission completion (only once)
@@ -1290,7 +1290,13 @@
 
         function assignNewMission() {
             const mission = missions[Math.floor(Math.random() * missions.length)];
-            currentMission = { type: mission.type, target: mission.target, progress: 0, completed: false };
+            currentMission = {
+                type: mission.type,
+                target: mission.target,
+                progress: 0,
+                completed: false,
+                startScore: score // Salva lo score corrente
+            };
             missionElement.style.color = '#00d4ff';
             missionElement.style.borderColor = '#00d4ff';
             updateMissionDisplay();
@@ -1341,7 +1347,7 @@
 
                     // Update mission progress
                     if (currentMission.type === 'score') {
-                        currentMission.progress = score;
+                        currentMission.progress = score - currentMission.startScore;
                         updateMissionDisplay();
                     }
 
