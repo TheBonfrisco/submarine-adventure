@@ -15,6 +15,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            min-height: 100vh;
             width: 100vw;
             margin: 0;
             padding: 0;
@@ -496,6 +497,18 @@
 
         async function uploadScore(nickname, score) {
             try {
+                // Wait for Firebase to be ready
+                let attempts = 0;
+                while (!window.firebaseDB && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+
+                if (!window.firebaseDB) {
+                    console.error('Firebase not initialized');
+                    return;
+                }
+
                 const timestamp = Date.now();
                 const scoreRef = window.firebaseRef(window.firebaseDB, `leaderboard/${timestamp}`);
                 await window.firebaseSet(scoreRef, {
@@ -511,6 +524,17 @@
 
         async function loadLeaderboard() {
             try {
+                // Wait for Firebase to be ready
+                let attempts = 0;
+                while (!window.firebaseDB && attempts < 50) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+
+                if (!window.firebaseDB) {
+                    throw new Error('Firebase not initialized');
+                }
+
                 const leaderboardRef = window.firebaseRef(window.firebaseDB, 'leaderboard');
                 const topScoresQuery = window.firebaseQuery(
                     leaderboardRef,
@@ -546,7 +570,7 @@
                 leaderboardScreen.style.display = 'block';
             } catch (error) {
                 console.error('Error loading leaderboard:', error);
-                leaderboardList.innerHTML = '<li>Error loading leaderboard</li>';
+                leaderboardList.innerHTML = '<li>Error loading leaderboard. Check Firebase setup.</li>';
                 leaderboardScreen.style.display = 'block';
             }
         }
@@ -594,20 +618,8 @@
             canvas.height = canvasHeight;
         }
 
-        // Fix viewport height for mobile browsers
-        function setViewportHeight() {
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-            document.body.style.height = `${window.innerHeight}px`;
-        }
-
-        setViewportHeight();
         resizeCanvas();
-
-        window.addEventListener('resize', () => {
-            setViewportHeight();
-            resizeCanvas();
-        });
+        window.addEventListener('resize', resizeCanvas);
 
         let gameState = 'start';
         let score = 0;
