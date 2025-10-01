@@ -383,7 +383,7 @@
                 <button class="btn" onclick="saveNickname()">Start Playing!</button>
             </div>
             <div id="leaderboardScreen">
-                <h2>🏆 TOP 5 LEADERBOARD 🏆</h2>
+                <h2>🏆 TOP 5 LEADERBOARD</h2>
                 <ul id="leaderboardList"></ul>
                 <button class="btn" onclick="closeLeaderboard()">Close</button>
             </div>
@@ -576,8 +576,7 @@
                 leaderboardList.innerHTML = '';
                 scores.forEach((entry, index) => {
                     const li = document.createElement('li');
-                    const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`;
-                    li.textContent = `${medal} ${entry.nickname}: ${entry.score}`;
+                    li.textContent = `${index + 1}. ${entry.nickname}: ${entry.score}`;
                     leaderboardList.appendChild(li);
                 });
 
