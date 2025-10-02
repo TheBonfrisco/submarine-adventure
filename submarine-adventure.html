@@ -1097,7 +1097,9 @@
             const iconCtx = iconCanvas.getContext('2d');
 
             if (type === 'shield') {
+                // Se già invulnerabile da perdita vita, cancella quel timer e usa solo il powerup
                 isInvulnerable = true;
+                invulnerabilityTimer = 0; // Reset temporary invulnerability
                 // Draw shield icon
                 iconCtx.fillStyle = '#00ff00';
                 iconCtx.strokeStyle = '#00aa00';
@@ -1160,8 +1162,11 @@
                 powerupTimerBarElement.style.width = percentage + '%';
 
                 if (powerupTimer === 0) {
+                    // Solo disabilita isInvulnerable se non c'è invulnerabilità temporanea attiva
+                    if (activePowerup === 'shield' && invulnerabilityTimer === 0) {
+                        isInvulnerable = false;
+                    }
                     activePowerup = null;
-                    isInvulnerable = false;
                     powerupIndicatorElement.style.display = 'none';
                     powerupTimerElement.style.display = 'none';
                 }
@@ -1169,10 +1174,10 @@
         }
 
         function drawSubmarine() {
-            // Draw shield if active
-            if (activePowerup === 'shield' || isInvulnerable) {
+            // Draw shield if active (check invulnerability timer too)
+            if (activePowerup === 'shield' || (isInvulnerable && invulnerabilityTimer > 0)) {
                 ctx.save();
-                ctx.globalAlpha = isInvulnerable && !activePowerup ? 0.5 : 0.7;
+                ctx.globalAlpha = (isInvulnerable && invulnerabilityTimer > 0 && activePowerup !== 'shield') ? 0.5 : 0.7;
                 ctx.strokeStyle = '#00ff00';
                 ctx.lineWidth = 3;
                 ctx.shadowBlur = 20;
