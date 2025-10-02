@@ -349,7 +349,7 @@
             position: absolute;
             top: 15px;
             left: 15px;
-            font-size: 11px;
+            font-size: 10px;
             font-family: 'Courier New', monospace;
             color: #00d4ff;
             text-shadow: 0 0 10px #00d4ff, 2px 2px 0px #000;
@@ -359,9 +359,12 @@
             padding: 4px 6px;
             border-radius: 5px;
             border: 2px solid #00d4ff;
-            max-width: 110px;
+            max-width: 160px;
+            min-width: 100px;
             line-height: 1.1;
-            word-wrap: break-word;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     </style>
 </head>
