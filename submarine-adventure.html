@@ -310,8 +310,9 @@
             position: absolute;
             top: 60px;
             left: 15px;
-            font-size: 16px;
-            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
             color: #FFD700;
             text-shadow: 0 0 10px #FFD700, 2px 2px 0px #000;
             z-index: 10;
@@ -348,19 +349,19 @@
             position: absolute;
             top: 15px;
             left: 15px;
-            font-size: 12px;
+            font-size: 11px;
             font-family: 'Courier New', monospace;
             color: #00d4ff;
             text-shadow: 0 0 10px #00d4ff, 2px 2px 0px #000;
             z-index: 10;
             pointer-events: none;
             background: rgba(0, 0, 0, 0.7);
-            padding: 5px 8px;
+            padding: 4px 6px;
             border-radius: 5px;
             border: 2px solid #00d4ff;
-            max-width: 120px;
-            font-size: 11px;
-            line-height: 1.2;
+            max-width: 110px;
+            line-height: 1.1;
+            word-wrap: break-word;
         }
     </style>
 </head>
@@ -396,7 +397,13 @@
             <div id="helpScreen">
                 <h2>HOW TO PLAY</h2>
                 <ul>
-                    <li><strong>CONTROLS:</strong> Tap to dive down</li>
+                    <li><strong>CONTROLS:</strong>
+                        <ul style="margin-top: 5px;">
+                            <li>Tap to dive down</li>
+                            <li>Multiple rapid taps for faster diving</li>
+                            <li>Long press (0.5s) for dash/speedup</li>
+                        </ul>
+                    </li>
                     <li><strong>LIVES:</strong> You have 3 lives. Lose one when hitting obstacles</li>
                     <li><strong>STARS:</strong> Collect stars for mission progress</li>
                     <li><strong>POWER-UPS:</strong>
@@ -917,8 +924,10 @@
         }
 
         function drawStars() {
+            const speedMultiplier = activePowerup === 'slowmo' ? 0.5 : 1;
+
             stars.forEach((star, index) => {
-                star.x -= currentSpeed;
+                star.x -= currentSpeed * speedMultiplier;
                 star.rotation += 0.05;
 
                 // Magnetism effect
@@ -980,8 +989,10 @@
         }
 
         function drawPowerups() {
+            const speedMultiplier = activePowerup === 'slowmo' ? 0.5 : 1;
+
             powerups.forEach((powerup, index) => {
-                powerup.x -= currentSpeed;
+                powerup.x -= currentSpeed * speedMultiplier;
 
                 ctx.save();
                 ctx.translate(powerup.x, powerup.y);
@@ -1051,15 +1062,63 @@
             powerupTimer = 300; // 5 seconds at 60fps
             const maxPowerupTime = 300;
 
+            // Clear previous content
+            powerupIndicatorElement.innerHTML = '';
+
+            // Create canvas for icon
+            const iconCanvas = document.createElement('canvas');
+            iconCanvas.width = 24;
+            iconCanvas.height = 24;
+            iconCanvas.style.verticalAlign = 'middle';
+            iconCanvas.style.marginRight = '8px';
+            const iconCtx = iconCanvas.getContext('2d');
+
             if (type === 'shield') {
                 isInvulnerable = true;
-                powerupIndicatorElement.textContent = '🛡️ SHIELD';
+                // Draw shield icon
+                iconCtx.fillStyle = '#00ff00';
+                iconCtx.strokeStyle = '#00aa00';
+                iconCtx.lineWidth = 2;
+                iconCtx.beginPath();
+                iconCtx.moveTo(12, 2);
+                iconCtx.lineTo(22, 6);
+                iconCtx.lineTo(22, 14);
+                iconCtx.lineTo(12, 22);
+                iconCtx.lineTo(2, 14);
+                iconCtx.lineTo(2, 6);
+                iconCtx.closePath();
+                iconCtx.fill();
+                iconCtx.stroke();
+
+                powerupIndicatorElement.appendChild(iconCanvas);
+                powerupIndicatorElement.appendChild(document.createTextNode('SHIELD'));
                 powerupTimerBarElement.style.background = 'linear-gradient(90deg, #00ff00, #00aa00)';
             } else if (type === 'slowmo') {
-                powerupIndicatorElement.textContent = '⏰ SLOW-MO';
+                // Draw clock icon
+                iconCtx.fillStyle = '#00d4ff';
+                iconCtx.strokeStyle = '#0099cc';
+                iconCtx.lineWidth = 2;
+                iconCtx.beginPath();
+                iconCtx.arc(12, 12, 10, 0, Math.PI * 2);
+                iconCtx.fill();
+                iconCtx.stroke();
+                iconCtx.fillStyle = '#000';
+                iconCtx.fillRect(11, 5, 2, 7);
+                iconCtx.fillRect(11, 11, 5, 2);
+
+                powerupIndicatorElement.appendChild(iconCanvas);
+                powerupIndicatorElement.appendChild(document.createTextNode('SLOW-MO'));
                 powerupTimerBarElement.style.background = 'linear-gradient(90deg, #00d4ff, #0099cc)';
             } else if (type === 'magnet') {
-                powerupIndicatorElement.textContent = '🧲 MAGNET';
+                // Draw magnet icon (U shape)
+                iconCtx.strokeStyle = '#ff00ff';
+                iconCtx.lineWidth = 5;
+                iconCtx.beginPath();
+                iconCtx.arc(12, 12, 8, Math.PI, 0, false);
+                iconCtx.stroke();
+
+                powerupIndicatorElement.appendChild(iconCanvas);
+                powerupIndicatorElement.appendChild(document.createTextNode('MAGNET'));
                 powerupTimerBarElement.style.background = 'linear-gradient(90deg, #ff00ff, #cc00cc)';
             }
 
