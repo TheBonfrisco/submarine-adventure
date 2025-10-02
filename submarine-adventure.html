@@ -1742,51 +1742,36 @@
             }
         });
 
-        let lastTapTime = 0;
-        let tapCount = 0;
-        let tapTimer = null;
-        const multiTapWindow = 300; // finestra temporale per rilevare tap multipli
+        let longPressTimer = null;
+        let isLongPress = false;
+        const longPressDuration = 500; // 500ms per attivare il dash
 
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            const now = Date.now();
-            const timeSinceLastTap = now - lastTapTime;
 
             if (gameState === 'start') {
                 startGame();
             } else if (gameState === 'playing') {
-                // Incrementa il contatore di tap se siamo dentro la finestra temporale
-                if (timeSinceLastTap < multiTapWindow) {
-                    tapCount++;
-                } else {
-                    tapCount = 1; // reset se è passato troppo tempo
-                }
+                // Esegui dive immediato
+                dive();
 
-                // Se è il secondo tap (potenziale double tap), dive più leggero
-                if (tapCount === 2) {
-                    submarine.velocity = submarine.dive * 0.4; // 40% della forza normale
-                } else {
-                    // Altrimenti dive normale
-                    dive();
-                }
-
-                // Cancella il timer precedente
-                if (tapTimer) {
-                    clearTimeout(tapTimer);
-                }
-
-                // Imposta un timer per verificare il numero di tap
-                tapTimer = setTimeout(() => {
-                    // Dopo la finestra temporale, controlla se erano esattamente 2 tap
-                    if (tapCount === 2) {
-                        performDash();
-                    }
-                    // Se tapCount >= 3, non fa dash (solo dive ripetuti)
-                    tapCount = 0;
-                }, multiTapWindow);
+                // Inizia il timer per long press
+                isLongPress = false;
+                longPressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    performDash();
+                }, longPressDuration);
             }
+        }, { passive: false });
 
-            lastTapTime = now;
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+
+            // Cancella il timer se rilasci prima del long press
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
         }, { passive: false });
 
         canvas.addEventListener('click', () => {
